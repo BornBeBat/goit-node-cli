@@ -1,5 +1,6 @@
 const fs = require("fs").promises;
 const path = require("path");
+const { randomUUID } = require("crypto");
 
 const contactsPath = path.join(__dirname, "./db/contacts.json");
 
@@ -16,11 +17,28 @@ async function getContactById(contactId) {
 }
 
 async function removeContact(contactId) {
-  // ...твій код. Повертає об'єкт видаленого контакту. Повертає null, якщо контакт з таким id не знайдений.
+  const contactsList = await listContacts();
+  const idx = contactsList.findIndex((contact) => contact.id === contactId);
+
+  if (idx === -1) return null;
+
+  const deletedContact = contactsList.splice(idx, 1);
+  fs.writeFile(contactsPath, JSON.stringify(contactsList, null, 2));
+  return deletedContact[0];
 }
 
 async function addContact(name, email, phone) {
-  // ...твій код. Повертає об'єкт доданого контакту (з id).
+  const contactsList = await listContacts();
+  const newContact = {
+    id: randomUUID(),
+    name,
+    email,
+    phone,
+  };
+  contactsList.push(newContact);
+
+  fs.writeFile(contactsPath, JSON.stringify(contactsList, null, 2));
+  return newContact;
 }
 
 module.exports = {
